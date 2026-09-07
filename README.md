@@ -97,6 +97,8 @@ python -m pytest tests -q   # 133 теста
 - Схема `EventHandlerExtension` и условного оформления восстановлена по докам/коду EDT — проверяйте на живом EDT перед продом.
 - Точные свойства форм-элементов в `create_metadata` стоит сверять через `get_metadata_details(assignable)`.
 - MXL-парсер покрывает основную модель табличного документа; экзотика (вложенные объекты рисунков) — в TODO.
+- TODO (требуют живого EDT-MCP для верификации): MCP-хендшейк `initialize`/`notifications.initialized` перед `tools/call`; семантика `resync_to_disk` — проверить, что вызов после файловых правок не затирает их.
+- Rollback при ошибке середины пакета гарантирован для `edtb_apply_mutations`; в одиночных операциях bsp/extensions/interface при частичном применении смотрите warnings и backup в `.edtb-backup/`.
 
 ## Лицензия
 
