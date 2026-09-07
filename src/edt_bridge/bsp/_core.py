@@ -108,7 +108,7 @@ def backup_file(path: Path, project_root: Path) -> Path | None:
         relative = Path(path.name)
     target = backup_dir / relative
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(path.read_text(encoding="utf-8"), encoding="utf-8") if False else shutil.copy2(path, target)
+    shutil.copy2(path, target)
     return target
 
 
