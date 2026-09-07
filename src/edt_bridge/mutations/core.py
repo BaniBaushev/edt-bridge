@@ -51,9 +51,15 @@ def normalize_ops(ops: list[dict[str, Any]]) -> list[dict[str, Any]]:
     ]
 
 
-def plan_hash(ops: list[dict[str, Any]]) -> str:
-    """sha256 каноничного JSON плана (нормализованных ops)."""
-    return hashlib.sha256(canonical_json(normalize_ops(ops)).encode("utf-8")).hexdigest()
+def plan_hash(ops: list[dict[str, Any]], project_path: str | None = None) -> str:
+    """sha256 каноничного JSON плана (нормализованных ops) + projectPath.
+
+    projectPath входит в hash: план с одного проекта нельзя применить
+    к другому. ВНИМАНИЕ: hash НЕ защищает от изменения состояния проекта
+    между plan и apply — применяйте план сразу после построения.
+    """
+    payload = {"ops": normalize_ops(ops), "projectPath": project_path or ""}
+    return hashlib.sha256(canonical_json(payload).encode("utf-8")).hexdigest()
 
 
 def delete_confirm_token(name: str, p_hash: str) -> str:
@@ -85,10 +91,26 @@ def _validate_patch_changes(changes: Any, warnings: list[str]) -> bool:
     return ok
 
 
+def resolve_target_path(project_root: Path, rel_path: str) -> Path:
+    """Безопасно разрешить путь цели ВНУТРИ корня проекта.
+
+    Отклоняет абсолютные пути и выход за пределы проекта (../../).
+    """
+    root = Path(project_root).resolve()
+    target = (root / rel_path).resolve()
+    try:
+        target.relative_to(root)
+    except ValueError as exc:
+        raise ValueError(
+            f"Путь {rel_path!r} выходит за пределы проекта {root} — отклонено"
+        ) from exc
+    return target
+
+
 def _target_exists(project_root: Path, op: dict[str, Any]) -> bool | None:
     """Адресуемость цели: None — не проверяется (только через EDT-MCP)."""
     if op["op"] == "patchFile":
-        return (project_root / op["path"]).exists()
+        return resolve_target_path(project_root, op["path"]).exists()
     return None
 
 
@@ -145,13 +167,20 @@ def plan_mutations(
         if kind == "patchFile":
             if not _validate_patch_changes(op.get("changes"), warnings):
                 result["ok"] = False
-            if project_root is not None and not _target_exists(project_root, op):
-                warnings.append(f"файл не существует: {op.get('path')}")
-                result["ok"] = False
+            if project_root is not None:
+                try:
+                    exists = _target_exists(project_root, op)
+                except ValueError as exc:
+                    warnings.append(str(exc))
+                    result["ok"] = False
+                    exists = None
+                if exists is False:
+                    warnings.append(f"файл не существует: {op.get('path')}")
+                    result["ok"] = False
         if kind == "deleteMetadata":
             entry["twoPhase"] = True
 
-    result["hash"] = plan_hash(ops)
+    result["hash"] = plan_hash(ops, project_path)
     # Confirm-токены привязаны к hash плана.
     for entry in result["ops"]:
         if entry.get("twoPhase"):

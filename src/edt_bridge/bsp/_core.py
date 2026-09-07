@@ -123,7 +123,13 @@ def proxy_call(tool_name: str, arguments: dict) -> tuple[bool, dict]:
 
         caller = getattr(client, "call_tool", None)
         if caller is None:
-            raise RuntimeError("в proxy.client нет call_tool")
+            client_cls = getattr(client, "EdtMcpClient", None)
+            if client_cls is None:
+                raise RuntimeError("в proxy.client нет call_tool/EdtMcpClient")
+
+            async def caller(name, args, _cls=client_cls):
+                return await _cls().call_tool(name, args)
+
         import asyncio
 
         result = caller(tool_name, arguments)

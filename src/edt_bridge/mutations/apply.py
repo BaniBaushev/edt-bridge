@@ -14,7 +14,7 @@ from ..config import ConfigError, file_mutations_allowed, resolve_project_path
 from ..proxy.client import EdtMcpClient, EdtMcpError, EdtMcpUnavailable
 from ..proxy.resync import resync_after_file_changes
 from ..safety import create_backup, git_dirty_check, unified_diff_preview
-from .core import EDT_MCP_TOOL_BY_OP, delete_confirm_token, plan_mutations
+from .core import resolve_target_path, EDT_MCP_TOOL_BY_OP, delete_confirm_token, plan_mutations
 from .patchfile import PatchError, patch_file, patch_file_preview
 
 
@@ -112,7 +112,7 @@ async def apply_mutations(
     # dryRun: только preview.
     if dry_run:
         for i, op in file_ops:
-            target = project_root / op["path"]
+            target = resolve_target_path(project_root, op["path"])
             try:
                 new_content = patch_file_preview(target, op["changes"])
                 result["previews"][op["path"]] = unified_diff_preview(
@@ -130,7 +130,7 @@ async def apply_mutations(
     # Backup файлов, затрагиваемых file-стратегией.
     backup = None
     if file_ops:
-        backup = create_backup(project_root, [project_root / op["path"] for _, op in file_ops])
+        backup = create_backup(project_root, [resolve_target_path(project_root, op["path"]) for _, op in file_ops])
         result["backupDir"] = str(backup.session_dir)
 
     client = client or EdtMcpClient()
@@ -141,7 +141,7 @@ async def apply_mutations(
         result["ops"].append(status)
         try:
             if op["op"] == "patchFile":
-                target = project_root / op["path"]
+                target = resolve_target_path(project_root, op["path"])
                 patch_file(target, op["changes"])
                 changed_files.append(target)
                 status["detail"] = f"применено изменений: {len(op['changes'])}"
