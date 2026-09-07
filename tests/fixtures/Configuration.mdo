@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdclass:Configuration xmlns:mdclass="http://v8.1c.ru/8.1/data/enterprise/current-config" name="ТестоваяКонфигурация" uuid="11111111-1111-1111-1111-111111111111">
+  <synonym/>
+  <clientApplicationInterface>
+    <panel>
+      <name>NavigationPanel</name>
+      <location>Top</location>
+    </panel>
+  </clientApplicationInterface>
+  <homePageWorkArea>
+    <column>
+      <form>CommonForm.РабочийСтол</form>
+    </column>
+  </homePageWorkArea>
+</mdclass:Configuration>

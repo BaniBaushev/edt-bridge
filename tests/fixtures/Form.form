@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form:Form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:form="http://g5.1c.ru/v8/dt/form">
+  <items xsi:type="form:FormField">
+    <name>Code</name>
+    <id>1</id>
+    <visible>true</visible>
+    <enabled>true</enabled>
+    <dataPath xsi:type="form:DataPath">
+      <segments>Object.Code</segments>
+    </dataPath>
+    <handlers>
+      <event>OnChange</event>
+      <name>CodeOnChange</name>
+    </handlers>
+    <type>InputField</type>
+    <extInfo xsi:type="form:InputFieldExtInfo">
+      <autoMaxWidth>true</autoMaxWidth>
+    </extInfo>
+  </items>
+  <items xsi:type="form:FormGroup">
+    <name>GroupPages</name>
+    <id>5</id>
+    <visible>true</visible>
+    <enabled>true</enabled>
+    <items xsi:type="form:FormGroup">
+      <name>Page1</name>
+      <id>6</id>
+      <visible>true</visible>
+      <enabled>true</enabled>
+      <title>
+        <key>ru</key>
+        <value>Шаг 1</value>
+      </title>
+    </items>
+  </items>
+  <autoCommandBar>
+    <name>FormCommandBar</name>
+    <id>-1</id>
+    <horizontalAlign>Left</horizontalAlign>
+    <autoFill>true</autoFill>
+  </autoCommandBar>
+  <handlers xsi:type="form:EventHandlerExtension">
+    <event>OnOpen</event>
+    <name>ExtOnOpen</name>
+    <callType>After</callType>
+  </handlers>
+  <commands>
+    <name>Load</name>
+    <id>1</id>
+    <action>LoadProcessing</action>
+  </commands>
+  <parameters>
+    <name>Key</name>
+    <key>true</key>
+  </parameters>
+  <autoTitle>true</autoTitle>
+  <attributes>
+    <name>Object</name>
+    <id>1</id>
+    <valueType>
+      <types>CatalogObject.Catalog</types>
+    </valueType>
+    <main>true</main>
+  </attributes>
+</form:Form>

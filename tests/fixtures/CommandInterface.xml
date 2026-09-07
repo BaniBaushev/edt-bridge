@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commandInterface xmlns="http://v8.1c.ru/8.3/xcf/extrn">
+  <commandsVisibility>
+    <visibility>
+      <command>Catalog.Товары.Command.СкрытаяКоманда</command>
+      <visible>
+        <common>false</common>
+      </visible>
+    </visibility>
+  </commandsVisibility>
+  <commandsPlacement>
+    <placement>
+      <command>Catalog.Товары.StandardCommand.OpenList</command>
+      <commandGroup>NavigationPanelOrdinary</commandGroup>
+    </placement>
+  </commandsPlacement>
+  <commandsOrder>
+    <order>
+      <command>Catalog.Товары.StandardCommand.OpenList</command>
+      <commandGroup>NavigationPanelOrdinary</commandGroup>
+      <index>0</index>
+    </order>
+  </commandsOrder>
+</commandInterface>
