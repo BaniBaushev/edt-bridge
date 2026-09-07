@@ -69,8 +69,11 @@ def _git_dirty_warnings(project_path) -> list[str]:
 
 
 async def _call_tool(name: str, args: dict[str, Any]) -> dict[str, Any]:
-    from edt_bridge.proxy.client import EdtMcpClient  # noqa: PLC0415
-    return await EdtMcpClient().call_tool(name, args)
+    from edt_bridge.proxy import client as client_mod  # noqa: PLC0415
+    caller = getattr(client_mod, "call_tool", None)
+    if caller is not None:
+        return await caller(name, args)
+    return await client_mod.EdtMcpClient().call_tool(name, args)
 
 
 async def _resync(project: Any) -> dict[str, Any]:

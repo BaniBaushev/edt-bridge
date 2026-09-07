@@ -113,7 +113,18 @@ def _resync(project: Path, warnings: list[str], objects: Optional[list[str]] = N
     try:
         from edt_bridge.proxy import resync as _resync_mod  # type: ignore
 
-        result = _resync_mod.resync(str(project), objects=objects)
+        runner = getattr(_resync_mod, "resync", None) or getattr(
+            _resync_mod, "resync_after_file_changes", None)
+        if runner is None:
+            raise RuntimeError("в proxy.resync нет resync*")
+        import asyncio
+        import inspect
+        try:
+            result = runner(str(project), objects=objects)
+        except TypeError:
+            result = runner(Path(str(project)))
+        if inspect.iscoroutine(result):
+            result = asyncio.run(result)
         res_warnings = (
             result.get("warnings") if isinstance(result, dict)
             else getattr(result, "warnings", None)
@@ -125,10 +136,17 @@ def _resync(project: Path, warnings: list[str], objects: Optional[list[str]] = N
         pass
     try:
         from edt_bridge.proxy import client as _client  # type: ignore
+        import asyncio
 
-        _client.call_tool("resync_to_disk", {"projectPath": str(project)})
-        if objects:
-            _client.call_tool("revalidate_objects", {"objects": objects})
+        async def _do():
+            caller = getattr(_client, "call_tool", None)
+            if caller is None:
+                caller = _client.EdtMcpClient().call_tool
+            await caller("resync_to_disk", {"projectPath": str(project)})
+            if objects:
+                await caller("revalidate_objects", {"objects": objects})
+
+        asyncio.run(_do())
         return
     except Exception:
         warnings.append(
